@@ -5,7 +5,7 @@
 Faça o download da biblioteca libmo445
 
 ```
-export NEWIFT_DIR=.../libmo445
+export NEWIFT_DIR=.../libmo445 # I'm placing it inside the repository
 ./compile [0 ou 1] # 0 CPU, 1 GPU
 ```
 ## Requisitos da biblioteca
