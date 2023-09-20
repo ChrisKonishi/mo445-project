@@ -13,10 +13,11 @@ target_layer = int(sys.argv[2])
 model_type   = int(sys.argv[3])
 
 os.system("preproc images 1.5 filtered")
+npts_per_marker = 1
+line = "bag_of_feature_points filtered markers {} bag".format(npts_per_marker)
+os.system(line)
 
 for layer in range(1,nlayers+1):
-    line = "bag_of_feature_points filtered markers {} bag".format(layer)
-    os.system(line)
     line = "create_layer_model bag arch.json {} flim".format(layer)
     os.system(line)
     if (model_type == 0):
