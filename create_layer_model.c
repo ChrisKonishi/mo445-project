@@ -169,9 +169,9 @@ int main(int argc, char *argv[])
       iftMImage *mimg    = iftReadMImage(filename);
       iftLabeledSet *S=NULL;
       if (iftIs3DMImage(mimg))
-	S  = iftReadLabeledSet(fs->files[i]->path,3);
+	      S  = iftReadLabeledSet(fs->files[i]->path,3);
       else
-	S  = iftReadLabeledSet(fs->files[i]->path,2);
+	      S  = iftReadLabeledSet(fs->files[i]->path,2);
 	
       /* Compute the scale factor w.r.t. the input of the network */
       float scale[3];
@@ -191,12 +191,12 @@ int main(int argc, char *argv[])
       
       /* compute filters and their truelabels */
       for (int s = 0, col=0; s < Z->nsamples; s++) {
-	iftUnitNorm(Z->sample[s].feat, Z->nfeats);
-	truelabel[s] = Z->sample[s].truelabel;
-	for (int row = 0; row < Z->nfeats; row++){
-	  iftMatrixElem(kernels, col, row) = Z->sample[s].feat[row];
-	}
-	col++;
+        iftUnitNorm(Z->sample[s].feat, Z->nfeats);
+        truelabel[s] = Z->sample[s].truelabel;
+        for (int row = 0; row < Z->nfeats; row++){
+          iftMatrixElem(kernels, col, row) = Z->sample[s].feat[row];
+        }
+        col++;
       }
 
       /* compute biases and update filters */
@@ -205,8 +205,13 @@ int main(int argc, char *argv[])
       bias = iftAllocFloatArray(kernels->ncols);
 
       /* Complete the code below to estimate the bias of each
-	 kernel */
-
+	      kernel */
+      /* Z->fsp.{mean stdev} */
+      for (int c=0; c < kernels->ncols; c++){ /* filter */
+        for (int r=0; r < kernels->nrows; r++){ /* feature in filter */
+          bias[c] -= (iftMatrixElem(kernels, r, c) * Z->fsp.mean[r]) / Z->fsp.stdev[r];
+        }
+      }
       
       /* save kernels, biases, and truelabels of the kernels */
   
