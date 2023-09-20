@@ -1,0 +1,13 @@
+{
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "C/C++: gcc build active file",
+            "command": "NEWIFT_DIR=${workspaceFolder}/libmo445 IFT_DEBUG=1 make -f ${workspaceFolder}/Makefile ${fileBasenameNoExtension}",
+            "options": {
+                "cwd": "${fileDirname}"
+            }
+        }
+    ],
+    "version": "2.0.0"
+}
