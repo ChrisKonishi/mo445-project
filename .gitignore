@@ -55,3 +55,11 @@ dkms.conf
 # User defined
 /bin/
 libmo445/
+/bag/
+/filtered/
+/flim/
+/salie/
+/boxes/
+/objs/
+/feat/
+/layer*/
