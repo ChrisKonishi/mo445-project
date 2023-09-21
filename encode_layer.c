@@ -106,15 +106,16 @@ int main(int argc, char *argv[]) {
         int nkernels = K->ncols;
         /* Convolution */
         iftMatrix *XI = iftMImageToFeatureMatrix(mimg,A,NULL); /*row: pixel, col: adjacencia*/
-        iftMatrix *activ = iftMultMatrices(XI, K); /*row:pixel, col:band*/
+        iftMatrix *XJ = iftMultMatrices(XI, K); /*row:pixel, col:band*/
         /* Add bias */
         for (int i=0; i<nkernels; i++){
           float c_bias = bias[i];
-          for (int b=0; b<activ->nrows; b++){
-            iftMatrixElem(activ, i, b) = iftMatrixElem(activ, i, b) + c_bias;
+          for (int b=0; b<XJ->nrows; b++){
+            iftMatrixElem(XJ, i, b) = iftMatrixElem(XJ, i, b) + c_bias;
           }
         }
         iftDestroyMatrix(&XI);
+        iftMImage *activ = iftMatrixToMImage(XJ, mimg->xsize, mimg->ysize, mimg->zsize, nkernels, 'c');
         /* Pooling */
         
         if (strcmp(arch->layer[layer-1].pool_type, "no_pool") != 0){
