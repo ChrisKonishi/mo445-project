@@ -116,6 +116,8 @@ int main(int argc, char *argv[]) {
         }
         iftDestroyMatrix(&XI);
         iftMImage *activ = iftMatrixToMImage(XJ, mimg->xsize, mimg->ysize, mimg->zsize, nkernels, 'c');
+        iftDestroyMatrix(&XJ);
+        iftDestroyAdjRel(&A);
         /* Pooling */
         
         if (strcmp(arch->layer[layer-1].pool_type, "no_pool") != 0){
