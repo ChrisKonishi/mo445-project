@@ -19,6 +19,8 @@ iftImage *DynamicTrees(iftImage *orig, iftImage *seeds_in, iftImage *seeds_out)
   iftVoxel u, v;
   iftLabeledSet *seeds = seeds_in;
   iftAdjRel *adjacency = iftCircular(1.0);
+  // TODO: create C(p) that accumulate the color
+  // TODO: create N(p) that does something(???)
 
   // Initialization
 
@@ -65,6 +67,7 @@ iftImage *DynamicTrees(iftImage *orig, iftImage *seeds_in, iftImage *seeds_out)
         if (queue->L.elem[neighbor_index].color != IFT_BLACK)
         {
 
+          // TODO: modification here so that root->val[neighbor_index] is C(p)/N(p)
           tmp = iftMax(pathval->val[p], root->val[neighbor_index]);
 
           if (tmp < pathval->val[neighbor_index])
@@ -74,6 +77,7 @@ iftImage *DynamicTrees(iftImage *orig, iftImage *seeds_in, iftImage *seeds_out)
 
             pathval->val[neighbor_index] = tmp;
             iftInsertGQueue(&queue, neighbor_index);
+            // TODO: Update C(p) and N(p) here (?)
           }
         }
       }
