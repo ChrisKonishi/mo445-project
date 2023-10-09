@@ -48,12 +48,47 @@ iftAdjRel *GetDiskAdjacency(iftImage *img, iftFLIMLayer layer) {
 
 /* Complete the code below to compute adaptive kernel weights */
 
+// float *AdaptiveWeights(iftMImage *mimg, float perc_thres) {
+//   float *weight = iftAllocFloatArray(mimg->m);
+//   iftVoxel v;
+//   for (int b = 0; b < mimg->m; b++) {
+//     long int n_activated = 0;
+//     for (int x = 0; x < mimg->xsize; x++) {
+//       for (int y = 0; y < mimg->ysize; y++) {
+//         int p;
+//         v.x = x;
+//         v.y = y;
+//         v.z = 0;
+//         p = iftMGetVoxelIndex(mimg, v);
+//         n_activated += mimg->val[p][b] > 0 ? 1 : 0;
+//       }
+//     }
+//     float mu_act = (float)n_activated / (float)(mimg->xsize * mimg->ysize);
+//     weight[b] = mu_act <= perc_thres ? 1 : -1;
+//   }
+//   return (weight);
+// }
+
+/* Complete the code below to compute adaptive kernel weights */
+
 float *AdaptiveWeights(iftMImage *mimg, float perc_thres) {
   float *weight = iftAllocFloatArray(mimg->m);
-
+  iftVoxel v;
   for (int b = 0; b < mimg->m; b++) {
+    float mu_act = 0;
+    for (int x = 0; x < mimg->xsize; x++) {
+      for (int y = 0; y < mimg->ysize; y++) {
+        int p;
+        v.x = x;
+        v.y = y;
+        v.z = 0;
+        p = iftMGetVoxelIndex(mimg, v);
+        mu_act += mimg->val[p][b];
+      }
+    }
+    mu_act /= (mimg->xsize * mimg->ysize); /* Negative values should be possible? */
+    weight[b] = mu_act <= perc_thres ? 1 : -1;
   }
-
   return (weight);
 }
 
@@ -123,7 +158,7 @@ int main(int argc, char *argv[]) {
           weight = LoadKernelWeights(filename);
         }
       } else {
-        weight = AdaptiveWeights(mimg, 0.10);
+        weight = AdaptiveWeights(mimg, 0.1);
       }
     }
 
@@ -135,7 +170,7 @@ int main(int argc, char *argv[]) {
           salie->val[p] += mimg->val[p][b] * weight[b];
         }
         if (salie->val[p] < 0)
-          salie->val[p] = 0; /* ReLU (or Sigmoid?) */
+          salie->val[p] = 0; /* ReLU (or Sigmoid?) Warning -> always negative */ 
       }
       iftFree(weight);
 
