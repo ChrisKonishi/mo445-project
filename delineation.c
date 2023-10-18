@@ -19,10 +19,9 @@ iftImage *DynamicTrees(iftImage *orig, iftImage *seeds_in, iftImage *seeds_out)
   iftVoxel u, v;
   iftLabeledSet *seeds = seeds_in;
   iftAdjRel *adjacency = iftCircular(1.0);
-  // TODO: create C(p) that accumulate the color
-  iftMImage *C = iftCreateMImageFromMImage(mimg);
-  // TODO: create N(p) that does something(???)
+  iftMImage *C = iftCreateMImage(mimg->xsize, mimg->ysize, mimg->zsize, mimg->m);
   iftImage *N = iftCreateImageFromImage(orig);
+  iftImage *roots;
 
   // Initialization
 
