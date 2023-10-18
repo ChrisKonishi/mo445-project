@@ -20,13 +20,15 @@ iftImage *DynamicTrees(iftImage *orig, iftImage *seeds_in, iftImage *seeds_out)
   iftLabeledSet *seeds = seeds_in;
   iftAdjRel *adjacency = iftCircular(1.0);
   // TODO: create C(p) that accumulate the color
+  iftMImage *C = iftCreateMImageFromMImage(mimg);
   // TODO: create N(p) that does something(???)
+  iftImage *N = iftCreateImageFromImage(orig);
 
   // Initialization
 
   pathval = iftCreateImage(mimg->xsize, mimg->ysize, mimg->zsize);
   label = iftCreateImage(mimg->xsize, mimg->ysize, mimg->zsize);
-  root = MImageGradient(mimg, adjacency);
+  roots = iftCreateImageFromImage(orig);
   queue = iftCreateGQueue(4095 + 1, mimg->n, pathval->val);
 
   /* Initialize costs */
@@ -51,6 +53,7 @@ iftImage *DynamicTrees(iftImage *orig, iftImage *seeds_in, iftImage *seeds_out)
 
   /* Propagate Optimum Paths by the Image Foresting Transform */
 
+  // TODO: atualizar
   while (!iftEmptyGQueue(queue))
   {
     p = iftRemoveGQueue(queue);
@@ -68,6 +71,9 @@ iftImage *DynamicTrees(iftImage *orig, iftImage *seeds_in, iftImage *seeds_out)
         {
 
           // TODO: modification here so that root->val[neighbor_index] is C(p)/N(p)
+          // C(p)/N(p) compara com MImage neighbor_index
+          // fazer distancia entre C(p)/N(p) e MImage neighbor_index
+          // C(p)/N(p) é a media da raiz de p
           tmp = iftMax(pathval->val[p], root->val[neighbor_index]);
 
           if (tmp < pathval->val[neighbor_index])
@@ -78,6 +84,8 @@ iftImage *DynamicTrees(iftImage *orig, iftImage *seeds_in, iftImage *seeds_out)
             pathval->val[neighbor_index] = tmp;
             iftInsertGQueue(&queue, neighbor_index);
             // TODO: Update C(p) and N(p) here (?)
+            // acumular o vetor de cores de q em C(raiz(p))
+            // incrementar N(raiz(p))
           }
         }
       }
