@@ -100,6 +100,13 @@ int main(int argc, char *argv[]) {
     iftDestroyMatrix(&XJ);
     iftDestroyAdjRel(&A);
 
+    /* Relu */
+    for (int p = 0; p < activ->n; p++) {
+      for (int b = 0; b < activ->m; b++) {
+        activ->val[p][b] = activ->val[p][b] < 0 ? 0 : activ->val[p][b];
+      }
+    }
+
     /* pooling */
 
     if (strcmp(arch->layer[layer - 1].pool_type, "no_pool") != 0) {
