@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
       /* Z->fsp.{mean stdev} */
       for (int c=0; c < kernels->ncols; c++){ /* filter */
         for (int r=0; r < kernels->nrows; r++){ /* feature in filter */
-          bias[c] -= (iftMatrixElem(kernels, r, c) * Z->fsp.mean[r]) / Z->fsp.stdev[r];
+          bias[c] -= ((iftMatrixElem(kernels, c, r) / Z->fsp.stdev[r]) * Z->fsp.mean[r]);
         }
       }
       
