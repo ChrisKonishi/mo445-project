@@ -75,19 +75,13 @@ float *AdaptiveWeights(iftMImage *mimg, float perc_thres) {
   float *weight = iftAllocFloatArray(mimg->m);
   iftVoxel v;
   for (int b = 0; b < mimg->m; b++) {
-    float mu_act = 0;
-    for (int x = 0; x < mimg->xsize; x++) {
-      for (int y = 0; y < mimg->ysize; y++) {
-        int p;
-        v.x = x;
-        v.y = y;
-        v.z = 0;
-        p = iftMGetVoxelIndex(mimg, v);
-        mu_act += mimg->val[p][b];
+    int activ_count = 0;
+    for (int p = 0; p < mimg->n; p++) {
+      if (mimg->val[p][b] > 0) {
+        activ_count++;
       }
     }
-    mu_act /= (mimg->xsize * mimg->ysize); /* Negative values should be possible? */
-    weight[b] = mu_act <= perc_thres ? 1 : -1;
+    weight[b] = (float)activ_count / (float)mimg->n <= perc_thres ? 1 : -1;
   }
   return (weight);
 }
@@ -170,7 +164,7 @@ int main(int argc, char *argv[]) {
           salie->val[p] += mimg->val[p][b] * weight[b];
         }
         if (salie->val[p] < 0)
-          salie->val[p] = 0; /* ReLU (or Sigmoid?) Warning -> always negative */ 
+          salie->val[p] = 0; /* ReLU (or Sigmoid?) Warning -> always negative */
       }
       iftFree(weight);
 

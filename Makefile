@@ -89,3 +89,6 @@ $@.c: $@.c
 clean:
 	rm -rf $(BIN)/*;
 	rm -rf ./bin/*;
+
+clean_exec:
+	rm -rf flim filtered bag salie/* boxes objs
