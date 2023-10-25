@@ -53,7 +53,6 @@ iftImage *DynamicTrees(iftImage *orig, iftImage *seeds_in, iftImage *seeds_out)
 
   /* Propagate Optimum Paths by the Image Foresting Transform */
 
-  // TODO: atualizar
   while (!iftEmptyGQueue(queue))
   {
     // remove o primeiro elemento da fila
@@ -72,12 +71,7 @@ iftImage *DynamicTrees(iftImage *orig, iftImage *seeds_in, iftImage *seeds_out)
 
         if (queue->L.elem[neighbor_index].color != IFT_BLACK)
         {
-
-          // TODO: modification here so that root->val[neighbor_index] is C(p)/N(p)
-          // C(p)/N(p) é a media da raiz de p
-          // C(p)/N(p) compara com MImage neighbor_index
-          // fazer distancia entre C(p)/N(p) e MImage neighbor_index
-          int mean_color = roots->val[p]; // <- mean color of root of p
+          int mean_color = roots->val[p];
           float cp[mimg->m];
           for (int b = 0; b < mimg->m; b++)
           {
@@ -94,9 +88,6 @@ iftImage *DynamicTrees(iftImage *orig, iftImage *seeds_in, iftImage *seeds_out)
 
             pathval->val[neighbor_index] = tmp;
             iftInsertGQueue(&queue, neighbor_index);
-            // TODO: Update C(p) and N(p) here
-            // acumular o vetor de cores de q em C(raiz(p))
-            // incrementar N(raiz(p))
             for (int b = 0; b < mimg->m; b++)
             {
               C->val[mean_color][b] = C->val[mean_color][b] + mimg->val[neighbor_index][b];
