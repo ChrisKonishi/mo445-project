@@ -6,8 +6,13 @@
         "type": "cppdbg",
         "request": "launch",
         "program": "${workspaceFolder}/bin/${fileBasenameNoExtension}",
-        "args": ["arch.json", "1", "flim"], // encode_layer
+        //"args": ["arch.json", "1", "flim"], // encode_layer
         //"args": ["1","arch.json","flim","0","salie"], // decode_layer
+        // "args": ["arch.json", "1", "flim"], // merge_layer
+        //"args": ["arch.json", "1", "flim"], //  encode_merged_layer  line = "./bin/encode_merged_layer arch.json {} flim".format(layer)
+        // "args": ["1", "arch.json", "flim", "2", "salie_merged"], // decode_layer merged adaptive
+        "args": ["bag","arch.json","1","flim"], // create layer
+
         "stopAtEntry": false,
         "cwd": "${fileDirname}",
         "environment": [],

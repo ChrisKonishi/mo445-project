@@ -91,4 +91,16 @@ clean:
 	rm -rf ./bin/*;
 
 clean_exec:
-	rm -rf flim filtered bag salie/* boxes objs
+	rm -rf flim filtered bag salie/* boxes objs layer*
+
+project:
+	$(MAKE) clean_exec
+	$(MAKE) preproc
+	$(MAKE) bag_of_feature_points
+	$(MAKE) create_layer_model
+	$(MAKE) encode_layer
+	$(MAKE) merge_layer_models
+	$(MAKE) encode_merged_layer
+	$(MAKE) decode_layer
+	$(MAKE) detection
+	$(MAKE) delineation
