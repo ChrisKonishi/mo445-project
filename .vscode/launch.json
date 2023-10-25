@@ -1,6 +1,5 @@
 {
-    "configurations": [
-
+  "configurations": [
     {
         "name": "(gdb) Launch",
         "type": "cppdbg",
@@ -32,5 +31,5 @@
             }
         ]
     }
-    ]
+  ]
 }
