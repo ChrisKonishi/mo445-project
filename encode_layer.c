@@ -102,10 +102,10 @@ int main(int argc, char *argv[]) {
           mimg, A, NULL);                     /*row: pixel, col: adjacencia*/
       iftMatrix *XJ = iftMultMatrices(XI, K); /*row:pixel, col:band*/
       /* Add bias */
-      for (int i = 0; i < nkernels; i++) {
-        float c_bias = bias[i];
-        for (int b = 0; b < XJ->nrows; b++) {
-          iftMatrixElem(XJ, i, b) = iftMatrixElem(XJ, i, b) + c_bias;
+      for (int b = 0; b < nkernels; b++) {
+        float c_bias = bias[b];
+        for (int i = 0; i < XJ->nrows; i++) {
+          iftMatrixElem(XJ, b, i) = iftMatrixElem(XJ, b, i) + c_bias;
         }
       }
       iftDestroyMatrix(&XI);
