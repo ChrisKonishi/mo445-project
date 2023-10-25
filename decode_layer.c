@@ -71,18 +71,47 @@ iftAdjRel *GetDiskAdjacency(iftImage *img, iftFLIMLayer layer) {
 
 /* Complete the code below to compute adaptive kernel weights */
 
+// float *AdaptiveWeights(iftMImage *mimg, float perc_thres) {
+//   float *weight = iftAllocFloatArray(mimg->m);
+//   iftVoxel v;
+//   for (int b = 0; b < mimg->m; b++) {
+//     int activ_count = 0;
+//     for (int p = 0; p < mimg->n; p++) {
+//       if (mimg->val[p][b] > 0) {
+//         activ_count++;
+//       }
+//     }
+//     weight[b] = (float)activ_count / (float)mimg->n <= perc_thres ? 1 : -1;
+//   }
+//   return (weight);
+// }
+
 float *AdaptiveWeights(iftMImage *mimg, float perc_thres) {
   float *weight = iftAllocFloatArray(mimg->m);
-  iftVoxel v;
+  float mean_activ_band[mimg->m];
+  float mean_activ = 0;
+  float rho_activ = 0;
+
   for (int b = 0; b < mimg->m; b++) {
     int activ_count = 0;
+    mean_activ_band[b] = 0;
     for (int p = 0; p < mimg->n; p++) {
-      if (mimg->val[p][b] > 0) {
-        activ_count++;
-      }
+      mean_activ_band[b] += mimg->val[p][b];
     }
-    weight[b] = (float)activ_count / (float)mimg->n <= perc_thres ? 1 : -1;
+    mean_activ_band[b] /= mimg->n;
+    mean_activ += mean_activ_band[b];
   }
+  mean_activ /= mimg->m;
+
+  for (int b = 0; b < mimg->m; b++) {
+    rho_activ += powf(mean_activ_band[b] - mean_activ, 2);
+  }
+  rho_activ = rho_activ / mimg->m;
+
+  for (int b = 0; b < mimg->m; b++) {
+    weight[b] = mean_activ_band[b] <= mean_activ + rho_activ ? 1 : -1;
+  }
+
   return (weight);
 }
 
