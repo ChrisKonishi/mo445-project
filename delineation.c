@@ -39,6 +39,7 @@ iftImage *DynamicTrees(iftImage *orig, iftImage *seeds_in, iftImage *seeds_out)
     pathval->val[p] = 0;
     iftInsertGQueue(&queue, p);
     seeds = seeds->next;
+    roots->val[p] = p;
   }
 
   for (p = 0; p < mimg->n; p++)
@@ -55,7 +56,10 @@ iftImage *DynamicTrees(iftImage *orig, iftImage *seeds_in, iftImage *seeds_out)
   // TODO: atualizar
   while (!iftEmptyGQueue(queue))
   {
+    // remove o primeiro elemento da fila
     p = iftRemoveGQueue(queue);
+
+    // pega as coordenadas do voxel p
     u = iftGetVoxelCoord(root, p);
 
     for (i = 1; i < adjacency->n; i++)
@@ -70,21 +74,34 @@ iftImage *DynamicTrees(iftImage *orig, iftImage *seeds_in, iftImage *seeds_out)
         {
 
           // TODO: modification here so that root->val[neighbor_index] is C(p)/N(p)
+          // C(p)/N(p) é a media da raiz de p
           // C(p)/N(p) compara com MImage neighbor_index
           // fazer distancia entre C(p)/N(p) e MImage neighbor_index
-          // C(p)/N(p) é a media da raiz de p
-          tmp = iftMax(pathval->val[p], root->val[neighbor_index]);
+          int mean_color = roots->val[p]; // <- mean color of root of p
+          float cp[mimg->m];
+          for (int b = 0; b < mimg->m; b++)
+          {
+            cp[b] = C->val[mean_color][b] / N->val[mean_color];
+          }
+          float distance = iftDistance1(cp, mimg->val[neighbor_index], 1, 0);
+          tmp = iftMax(pathval->val[p], distance);
 
           if (tmp < pathval->val[neighbor_index])
           {
             iftRemoveGQueueElem(queue, neighbor_index);
             label->val[neighbor_index] = label->val[p];
+            root->val[neighbor_index] = roots->val[p];
 
             pathval->val[neighbor_index] = tmp;
             iftInsertGQueue(&queue, neighbor_index);
-            // TODO: Update C(p) and N(p) here (?)
+            // TODO: Update C(p) and N(p) here
             // acumular o vetor de cores de q em C(raiz(p))
             // incrementar N(raiz(p))
+            for (int b = 0; b < mimg->m; b++)
+            {
+              C->val[mean_color][b] = C->val[mean_color][b] + mimg->val[neighbor_index][b];
+            }
+            N->val[mean_color] = N->val[mean_color] + 1;
           }
         }
       }
