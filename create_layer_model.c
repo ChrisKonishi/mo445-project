@@ -197,21 +197,13 @@ int main(int argc, char *argv[]) {
 
     /* Complete the code below to estimate the bias of each
        kernel */
-
-    for (int c = 0; c < kernels->ncols; c++) { /* col filter, row features */
-      float mean_feat = 0, stdev_feat = 0;
-
-      for (int r = 0; r < kernels->nrows; r++) { /* mean */
-        mean_feat += iftMatrixElem(kernels, c, r);
-      }
-      mean_feat /= kernels->nrows;
-      for (int r = 0; r < kernels->nrows; r++) { /* stdev */
-        stdev_feat += pow(iftMatrixElem(kernels, c, r) - mean_feat, 2);
-      }
-      stdev_feat = sqrt(stdev_feat / kernels->nrows);
-
+    /* Z->fsp.{mean stdev} */
+    for (int c = 0; c < kernels->ncols; c++) { /* filter */
+      bias[c] = 0;
       for (int r = 0; r < kernels->nrows; r++) { /* feature in filter */
-        bias[c] -= (iftMatrixElem(kernels, c, r) * mean_feat) / stdev_feat;
+        iftMatrixElem(kernels, c, r) =
+            iftMatrixElem(kernels, c, r) / Z->fsp.stdev[r];
+        bias[c] -= iftMatrixElem(kernels, c, r) * Z->fsp.mean[r];
       }
     }
 
