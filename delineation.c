@@ -14,52 +14,59 @@ iftImage *DynamicTrees(iftImage *orig, iftImage *seeds_in, iftImage *seeds_out)
 {
   iftMImage *mimg = iftImageToMImage(orig, LAB_CSPACE);
   iftImage *pathval = NULL, *label = NULL, *root = NULL;
+  float *tree_L = NULL, *tree_A = NULL, *tree_B = NULL;
+  int *nnodes = NULL;
+  int Imax = iftRound(sqrtf(3.0) * iftMax(iftMax(iftMMaximumValue(mimg, 0), iftMMaximumValue(mimg, 1)), iftMMaximumValue(mimg, 2)));
   iftGQueue *queue = NULL;
-  int i, p, neighbor_index, tmp;
-  iftVoxel u, v;
-  iftLabeledSet *seeds = seeds_in;
   iftAdjRel *adjacency = iftCircular(1.0);
-  iftMImage *C = iftCreateMImage(mimg->xsize, mimg->ysize, mimg->zsize, mimg->m);
-  iftImage *N = iftCreateImageFromImage(orig);
-  iftImage *roots;
+  int i, p, q, r, tmp;
+  iftVoxel u, v;
 
   // Initialization
 
-  pathval = iftCreateImage(mimg->xsize, mimg->ysize, mimg->zsize);
-  label = iftCreateImage(mimg->xsize, mimg->ysize, mimg->zsize);
-  roots = iftCreateImageFromImage(orig);
-  queue = iftCreateGQueue(4095 + 1, mimg->n, pathval->val);
+  pathval = iftCreateImage(orig->xsize, orig->ysize, orig->zsize);
+  label = iftCreateImage(orig->xsize, orig->ysize, orig->zsize);
+  root = iftCreateImage(orig->xsize, orig->ysize, orig->zsize);
+  tree_L = iftAllocFloatArray(orig->n);
+  tree_A = iftAllocFloatArray(orig->n);
+  tree_B = iftAllocFloatArray(orig->n);
+  nnodes = iftAllocIntArray(orig->n);
+  queue = iftCreateGQueue(Imax + 1, orig->n, pathval->val);
 
   /* Initialize costs */
 
-  while (seeds != NULL)
-  {
-    p = seeds->elem;
-    label->val[p] = seeds->label;
-    pathval->val[p] = 0;
-    iftInsertGQueue(&queue, p);
-    seeds = seeds->next;
-    roots->val[p] = p;
-  }
-
   for (p = 0; p < mimg->n; p++)
   {
-    if (queue->L.elem[p].color == IFT_WHITE)
-    { /* it is not seed */
-      pathval->val[p] = IFT_INFINITY_INT;
-      iftInsertGQueue(&queue, p);
+    pathval->val[p] = IFT_INFINITY_FLT;
+    if (seeds_in->val[p] != 0)
+    {
+      root->val[p] = p;
+      label->val[p] = seeds_in->val[p];
+      pathval->val[p] = 0;
     }
+    else
+    {
+      if (seeds_out->val[p] != 0)
+      {
+        root->val[p] = p;
+        label->val[p] = 0;
+        pathval->val[p] = 0;
+      }
+    }
+    iftInsertGQueue(&queue, p);
   }
 
   /* Propagate Optimum Paths by the Image Foresting Transform */
 
   while (!iftEmptyGQueue(queue))
   {
-    // remove o primeiro elemento da fila
     p = iftRemoveGQueue(queue);
-
-    // pega as coordenadas do voxel p
-    u = iftGetVoxelCoord(root, p);
+    r = root->val[p];
+    tree_L[r] += mimg->val[p][0];
+    tree_A[r] += mimg->val[p][1];
+    tree_B[r] += mimg->val[p][2];
+    nnodes[r] += 1;
+    u = iftGetVoxelCoord(orig, p);
 
     for (i = 1; i < adjacency->n; i++)
     {
@@ -67,32 +74,26 @@ iftImage *DynamicTrees(iftImage *orig, iftImage *seeds_in, iftImage *seeds_out)
 
       if (iftValidVoxel(root, v))
       {
-        neighbor_index = iftGetVoxelIndex(root, v);
+        q = iftGetVoxelIndex(orig, v);
 
-        if (queue->L.elem[neighbor_index].color != IFT_BLACK)
+        if (iftValidVoxel(orig, v))
         {
-          int mean_color = roots->val[p];
-          float cp[mimg->m];
-          for (int b = 0; b < mimg->m; b++)
-          {
-            cp[b] = C->val[mean_color][b] / N->val[mean_color];
-          }
-          float distance = iftDistance1(cp, mimg->val[neighbor_index], 1, 0);
-          tmp = iftMax(pathval->val[p], distance);
+          int Wi = iftRound(
+              sqrt(powf((mimg->val[q][0] - tree_L[r] / nnodes[r]), 2.0) +
+                   powf((mimg->val[q][1] - tree_A[r] / nnodes[r]), 2.0) +
+                   powf((mimg->val[q][2] - tree_B[r] / nnodes[r]), 2.0)));
+          tmp = iftMax(pathval->val[p], Wi);
 
-          if (tmp < pathval->val[neighbor_index])
+          if (tmp < pathval->val[q])
           {
-            iftRemoveGQueueElem(queue, neighbor_index);
-            label->val[neighbor_index] = label->val[p];
-            root->val[neighbor_index] = roots->val[p];
-
-            pathval->val[neighbor_index] = tmp;
-            iftInsertGQueue(&queue, neighbor_index);
-            for (int b = 0; b < mimg->m; b++)
+            if (queue->L.elem[q].color == IFT_GRAY)
             {
-              C->val[mean_color][b] = C->val[mean_color][b] + mimg->val[neighbor_index][b];
+              iftRemoveGQueueElem(queue, q);
             }
-            N->val[mean_color] = N->val[mean_color] + 1;
+            label->val[q] = label->val[p];
+            root->val[q] = root->val[p];
+            pathval->val[q] = tmp;
+            iftInsertGQueue(&queue, q);
           }
         }
       }
