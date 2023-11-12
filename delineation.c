@@ -37,7 +37,7 @@ iftImage *DynamicTrees(iftImage *orig, iftImage *seeds_in, iftImage *seeds_out)
 
   for (p = 0; p < mimg->n; p++)
   {
-    pathval->val[p] = IFT_INFINITY_FLT;
+    pathval->val[p] = IFT_INFINITY_INT;
     if (seeds_in->val[p] != 0)
     {
       root->val[p] = p;
