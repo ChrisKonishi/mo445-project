@@ -86,32 +86,70 @@ iftAdjRel *GetDiskAdjacency(iftImage *img, iftFLIMLayer layer) {
 //   return (weight);
 // }
 
+// float *AdaptiveWeights(iftMImage *mimg, float perc_thres) {
+//   float *weight = iftAllocFloatArray(mimg->m);
+//   float mean_activ_band[mimg->m];
+//   float mean_activ = 0;
+//   float rho_activ = 0;
+
+//   for (int b = 0; b < mimg->m; b++) {
+//     int activ_count = 0;
+//     mean_activ_band[b] = 0;
+//     for (int p = 0; p < mimg->n; p++) {
+//       mean_activ_band[b] += mimg->val[p][b];
+//     }
+//     mean_activ_band[b] /= mimg->n;
+//     mean_activ += mean_activ_band[b];
+//   }
+//   mean_activ /= mimg->m;
+
+//   for (int b = 0; b < mimg->m; b++) {
+//     rho_activ += powf(mean_activ_band[b] - mean_activ, 2);
+//   }
+//   rho_activ = rho_activ / mimg->m;
+
+//   for (int b = 0; b < mimg->m; b++) {
+//     weight[b] = mean_activ_band[b] <= mean_activ + rho_activ ? 1 : -1;
+//   }
+
+//   return (weight);
+// }
+
+// float *AdaptiveWeights(iftMImage *mimg, float perc_thres) {
+//   float *weight = iftAllocFloatArray(mimg->m);
+
+//   for (int b = 0; b < mimg->m; b++) {
+//     for (int p = 0; p < mimg->n; p++) {
+//       weight[b] += mimg->val[p][b];
+//     }
+//     weight[b] /= mimg->n;
+//     weight[b] = weight[b] <= perc_thres ? 1 : -1;
+//   }
+//   return (weight);
+// }
+
+/*  */
+
 float *AdaptiveWeights(iftMImage *mimg, float perc_thres) {
   float *weight = iftAllocFloatArray(mimg->m);
-  float mean_activ_band[mimg->m];
-  float mean_activ = 0;
-  float rho_activ = 0;
+  int t, count;
 
   for (int b = 0; b < mimg->m; b++) {
-    int activ_count = 0;
-    mean_activ_band[b] = 0;
+    iftImage *img = iftMImageToImage(mimg, 255, b);
+    t = iftOtsu(img);
+    count = 0;
+
+    /* count activated pixels */
     for (int p = 0; p < mimg->n; p++) {
-      mean_activ_band[b] += mimg->val[p][b];
+      if (img->val[p] > t)
+        count++;
     }
-    mean_activ_band[b] /= mimg->n;
-    mean_activ += mean_activ_band[b];
-  }
-  mean_activ /= mimg->m;
 
-  for (int b = 0; b < mimg->m; b++) {
-    rho_activ += powf(mean_activ_band[b] - mean_activ, 2);
-  }
-  rho_activ = rho_activ / mimg->m;
+    /* compute the weight */
+    weight[b] = ((float)count / (float)img->n) <= perc_thres ? 1.0 : -1.0;
 
-  for (int b = 0; b < mimg->m; b++) {
-    weight[b] = mean_activ_band[b] <= mean_activ + rho_activ ? 1 : -1;
+    iftDestroyImage(&img);
   }
-
   return (weight);
 }
 
@@ -181,7 +219,7 @@ int main(int argc, char *argv[]) {
           weight = LoadKernelWeights(filename);
         }
       } else {
-        weight = AdaptiveWeights(mimg, 0.1);
+        weight = AdaptiveWeights(mimg, 0.1); // it used to be 0.1
       }
     }
 
