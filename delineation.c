@@ -232,6 +232,7 @@ int main(int argc, char *argv[])
       iftImage *smooth_label = iftFastSmoothObjects(label, weight, 5);
       iftDestroyImage(&label);
       label = smooth_label;
+      iftWriteImageByExt(label, "label/%s_label.png", basename1);
       iftDestroyFImage(&weight);
       img = iftCopyImage(orig);
       iftDrawBorders(img, label, C, ctb->color[1], B);

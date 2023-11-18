@@ -63,4 +63,6 @@ libmo445/
 /objs/
 /feat/
 /layer*/
+/label/
+/iou/
 salie_merged/
