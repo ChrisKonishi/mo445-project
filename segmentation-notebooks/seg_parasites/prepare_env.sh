@@ -5,7 +5,7 @@ set -x
 
 cmd="mamba" # or conda
 
-create mamba/conda environment
+# create mamba/conda environment
 $cmd create -n mo445 python==3.10
 
 $cmd install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia -y
