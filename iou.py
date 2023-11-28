@@ -7,7 +7,10 @@ def calculate_iou(gt, label):
     intersection = np.logical_and(gt, label)
     union = np.logical_or(gt, label)
 
-    iou_score = np.sum(intersection) / np.sum(union)
+    if np.sum(union) == 0:
+        iou_score = 1
+    else:
+        iou_score = np.sum(intersection) / np.sum(union)
 
     return iou_score
 
@@ -37,17 +40,18 @@ def visualize_intersection_union(gt_image, label_image):
 
     return result, iou
 
-# Replace these paths with the paths to your ground truth and label images
-ground_truth_path = 'truelabels/000001.png'
-label_path = 'label/modified_000001_label.png'
+if __name__ == '__main__':
+    # Replace these paths with the paths to your ground truth and label images
+    ground_truth_path = 'truelabels/000001.png'
+    label_path = 'label/modified_000001_label.png'
 
-# Create a directory for saving visualizations if it doesn't exist
-iou_dir = 'iou'
-if not os.path.exists(iou_dir):
-    os.makedirs(iou_dir)
+    # Create a directory for saving visualizations if it doesn't exist
+    iou_dir = 'iou'
+    if not os.path.exists(iou_dir):
+        os.makedirs(iou_dir)
 
-visualization, iou = visualize_intersection_union(ground_truth_path, label_path)
+    visualization, iou = visualize_intersection_union(ground_truth_path, label_path)
 
-# Save the visualization in the 'iou' folder
-visualization_path = os.path.join(iou_dir, 'iou_visualization.png')
-cv2.imwrite(visualization_path, visualization)
+    # Save the visualization in the 'iou' folder
+    visualization_path = os.path.join(iou_dir, 'iou_visualization.png')
+    cv2.imwrite(visualization_path, visualization)

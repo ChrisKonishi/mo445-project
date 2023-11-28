@@ -213,8 +213,12 @@ int main(int argc, char *argv[])
     iftDestroyImage(&bin);
     iftImage *img = NULL;
 
-    if (iftMaximumValue(seeds_in) == 0)
+    if (iftMaximumValue(seeds_in) == 0){
       img = iftCopyImage(orig);
+      /* create empty image */
+      iftImage *label = iftCreateImage(orig->xsize, orig->ysize, orig->zsize);
+      iftWriteImageByExt(label, "label/%s_label.png", basename1);
+    }
     else
     {
       iftSet *S = NULL;
@@ -265,4 +269,13 @@ int main(int argc, char *argv[])
   printf("\nDone ... %s\n", iftFormattedTime(iftCompTime(tstart, iftToc())));
 
   return (0);
+}
+
+int has_label(iftImage *label, float l)
+{
+  for (int p = 0; p < label->n; p++){
+    if (label->val[p] == l)
+      return 1;
+    }
+  return 0;
 }

@@ -91,7 +91,7 @@ clean:
 	rm -rf ./bin/*;
 
 clean_exec:
-	rm -rf flim filtered bag salie/* boxes objs layer*
+	rm -rf flim filtered bag salie/* boxes objs layer* label/*
 
 project:
 	$(MAKE) clean_exec

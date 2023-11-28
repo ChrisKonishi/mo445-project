@@ -9,6 +9,7 @@ def change_pixels_in_folder(folder_path):
     
     # Get a list of all files in the folder
     files = os.listdir(folder_path)
+    files.sort()
     
     # Iterate through each file in the folder
     for file_name in files:
@@ -28,9 +29,9 @@ def change_pixels_in_folder(folder_path):
                     # Get the pixel value
                     pixel_value = img.getpixel((x, y))
                     
-                    # If pixel value is 1, change it to 256
-                    if pixel_value == 1:
-                        img.putpixel((x, y), 256)
+                    # If pixel value is 1, change it to 255
+                    if pixel_value != 0:
+                        img.putpixel((x, y), 255)
             
             # Save the modified image with a new filename
             modified_file_path = os.path.join(folder_path, f"modified_{file_name}")
