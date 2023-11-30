@@ -259,3 +259,33 @@ int has_label(iftImage *label, float l) {
   }
   return 0;
 }
+
+iftImage *remove_labels(iftImage *label, float min_size, float max_size) {
+  /* min_size and max_size (proportion) for the connected components */
+  int ncomps = iftMaximumValue(label);
+  int *size = iftAllocIntArray(ncomps + 1);
+  int *label_remove = iftAllocIntArray(ncomps + 1);
+
+  for (int p = 0; p < label->n; p++) {
+    if (label->val[p])
+      size[label->val[p]]++;
+  }
+
+  for (int p = 0; p < label->n; p++) {
+    if (label->val[p]) {
+      if (size[label->val[p]] < min_size * label->n ||
+          size[label->val[p]] > max_size * label->n) {
+        label_remove[label->val[p]] = 1;
+      }
+    }
+  }
+
+  for (int p = 0; p < label->n; p++) {
+    if (label_remove[label->val[p]])
+      label->val[p] = 0;
+  }
+
+  iftFree(size);
+  iftFree(label_remove);
+  return label;
+}
