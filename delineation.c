@@ -154,6 +154,45 @@ iftImage *ImageGradient(iftImage *img, iftAdjRel *A) {
   return (gradI);
 }
 
+int has_label(iftImage *label, float l) {
+  for (int p = 0; p < label->n; p++) {
+    if (label->val[p] == l)
+      return 1;
+  }
+  return 0;
+}
+
+iftImage *remove_labels_by_perc(iftImage *label, float min_size,
+                                float max_size) {
+  /* min_size and max_size (proportion) for the connected components */
+  int ncomps = iftMaximumValue(label);
+  int *size = iftAllocIntArray(ncomps + 1);
+  int *label_remove = iftAllocIntArray(ncomps + 1);
+
+  for (int p = 0; p < label->n; p++) {
+    if (label->val[p])
+      size[label->val[p]]++;
+  }
+
+  for (int p = 0; p < label->n; p++) {
+    if (label->val[p]) {
+      if (size[label->val[p]] < min_size * label->n ||
+          size[label->val[p]] > max_size * label->n) {
+        label_remove[label->val[p]] = 1;
+      }
+    }
+  }
+
+  for (int p = 0; p < label->n; p++) {
+    if (label_remove[label->val[p]])
+      label->val[p] = 0;
+  }
+
+  iftFree(size);
+  iftFree(label_remove);
+  return label;
+}
+
 int main(int argc, char *argv[]) {
 
   /* Example: delineation salie 1 objs */
@@ -217,6 +256,8 @@ int main(int argc, char *argv[]) {
       iftImage *smooth_label = iftFastSmoothObjects(label, weight, 5);
       iftDestroyImage(&label);
       label = smooth_label;
+      label = remove_labels_by_perc(label, 0.01, 0.035);
+      label = iftSelectLargestComp(label, NULL);
       iftWriteImageByExt(label, "label/%s_label.png", basename1);
       iftDestroyFImage(&weight);
       img = iftCopyImage(orig);
@@ -250,42 +291,4 @@ int main(int argc, char *argv[]) {
   printf("\nDone ... %s\n", iftFormattedTime(iftCompTime(tstart, iftToc())));
 
   return (0);
-}
-
-int has_label(iftImage *label, float l) {
-  for (int p = 0; p < label->n; p++) {
-    if (label->val[p] == l)
-      return 1;
-  }
-  return 0;
-}
-
-iftImage *remove_labels(iftImage *label, float min_size, float max_size) {
-  /* min_size and max_size (proportion) for the connected components */
-  int ncomps = iftMaximumValue(label);
-  int *size = iftAllocIntArray(ncomps + 1);
-  int *label_remove = iftAllocIntArray(ncomps + 1);
-
-  for (int p = 0; p < label->n; p++) {
-    if (label->val[p])
-      size[label->val[p]]++;
-  }
-
-  for (int p = 0; p < label->n; p++) {
-    if (label->val[p]) {
-      if (size[label->val[p]] < min_size * label->n ||
-          size[label->val[p]] > max_size * label->n) {
-        label_remove[label->val[p]] = 1;
-      }
-    }
-  }
-
-  for (int p = 0; p < label->n; p++) {
-    if (label_remove[label->val[p]])
-      label->val[p] = 0;
-  }
-
-  iftFree(size);
-  iftFree(label_remove);
-  return label;
 }
