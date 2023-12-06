@@ -68,3 +68,5 @@ libmo445/
 /bb/
 salie_merged/
 segmentation-notebooks/data/parasites/exper/
+/__pycache__/
+
