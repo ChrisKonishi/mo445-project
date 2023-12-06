@@ -23,6 +23,9 @@ def main(label_dir, gt_dir, ori_img_dir):
     original_images = os.listdir(ori_img_dir)
 
     # Sort the images to ensure that they are aligned
+
+    gt_images = remove_gt_not_used(mask_images, gt_images)
+
     mask_images.sort()
     gt_images.sort()
     original_images.sort()
@@ -144,6 +147,20 @@ def bb_iou(gt_bb, pred_bb):
 
     iou = intersection_area / union_area
     return iou
+
+def remove_gt_not_used(masked_images, gt_images):
+    """
+    Remove ground truth images that are not used
+    """
+    maks_ids = [i.split("_")[1] for i in masked_images]
+
+    cleaned_gt_images = []
+    for gt_image in gt_images:
+        gt_id = gt_image.split(".")[0]
+        if gt_id in maks_ids:
+            cleaned_gt_images.append(gt_image)
+    
+    return cleaned_gt_images
 
 
 if __name__ == "__main__":
