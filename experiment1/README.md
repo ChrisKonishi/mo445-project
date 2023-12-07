@@ -23,7 +23,7 @@ Aumentar número de kernel
 - Average IoU bb: 0.45417419380414326
 > Começam a surgir artefatos no topo na imagem
 
-### 1 per marker 3 img (1, 2, 3, 4)
+### 1 per marker 4 img (1, 2, 3, 4)
 - Average IoU seg: 0.22331956349451917
 - Average Dice seg: 0.23010805866368747
 - Average IoU bb: 0.220850244524312
