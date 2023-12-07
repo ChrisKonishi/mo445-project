@@ -38,5 +38,6 @@ def change_pixels_in_folder(folder_path):
             img.save(modified_file_path)
             print(f"Modified {file_name} saved as {modified_file_path}")
 
-# Replace "your_folder_path" with the path to your folder containing images
-change_pixels_in_folder("./label")
+if __name__ == "__main__":
+    # Replace "your_folder_path" with the path to your folder containing images
+    change_pixels_in_folder("./label")

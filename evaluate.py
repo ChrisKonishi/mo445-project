@@ -52,9 +52,9 @@ def main(label_dir, gt_dir, ori_img_dir):
         gt_image = cv2.imread(gt_image_path, cv2.IMREAD_GRAYSCALE).flatten()
         gt_image[gt_image > 0] = 1
         # calculate dice
-        dice = metrics.f1_score(
-            gt_image, mask_image_pred, average="binary", zero_division=1
-        )
+        dice = np.sum(mask_image_pred[gt_image == 1]) * 2.0 / (np.sum(mask_image_pred) + np.sum(gt_image))
+        if np.isnan(dice):
+            dice = 1.0
         print(f"Dice: {dice}")
         acc_dice_seg += dice
 

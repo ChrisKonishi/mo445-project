@@ -86,12 +86,12 @@ $@.c: $@.c
 	$(CC) $(FLAGS) $@.c -o ./bin/$@ $(INCLUDES) $(LIBS)
 
 
-clean:
+clean_all:
 	rm -rf $(BIN)/*;
 	rm -rf ./bin/*;
 
 clean_exec:
-	rm -rf flim filtered bag salie/* boxes objs layer* label/*
+	rm -rf flim filtered bag salie/* boxes objs layer* label/* bb/* iou/*
 
 project:
 	$(MAKE) clean_exec
