@@ -13,7 +13,7 @@ target_layer = int(sys.argv[2])
 model_type   = int(sys.argv[3])
 
 os.system("./bin/preproc images 1.5 filtered")
-npts_per_marker = 1
+npts_per_marker = 5
 line = "./bin/bag_of_feature_points filtered markers {} bag".format(npts_per_marker)
 os.system(line)
 
