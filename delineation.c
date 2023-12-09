@@ -362,7 +362,7 @@ int main(int argc, char *argv[])
       iftDestroyImage(&seeds_in);
       seeds_in = bin;
 
-      // iftImage *label = Watershed(gradI,seeds_in,seeds_out);
+      // iftImage *label = Watershed(gradI, seeds_in, seeds_out);
       iftImage *label = DynamicTrees(orig, seeds_in, seeds_out);
       iftFImage *weight = iftSmoothWeightImage(gradI, 0.5);
       iftImage *smooth_label = iftFastSmoothObjects(label, weight, 5);
