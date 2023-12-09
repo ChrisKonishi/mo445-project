@@ -7,7 +7,8 @@
 
 */
 
-float *LoadBias(char *basepath) {
+float *LoadBias(char *basepath)
+{
   int number_of_kernels;
   char filename[200];
   FILE *fp;
@@ -17,7 +18,8 @@ float *LoadBias(char *basepath) {
   fp = fopen(filename, "r");
   fscanf(fp, "%d", &number_of_kernels);
   bias = iftAllocFloatArray(number_of_kernels);
-  for (int k = 0; k < number_of_kernels; k++) {
+  for (int k = 0; k < number_of_kernels; k++)
+  {
     fscanf(fp, "%f ", &bias[k]);
   }
   fclose(fp);
@@ -25,14 +27,18 @@ float *LoadBias(char *basepath) {
   return (bias);
 }
 
-iftAdjRel *GetPatchAdjacency(iftMImage *mimg, iftFLIMLayer layer) {
+iftAdjRel *GetPatchAdjacency(iftMImage *mimg, iftFLIMLayer layer)
+{
   iftAdjRel *A;
 
-  if (iftIs3DMImage(mimg)) {
+  if (iftIs3DMImage(mimg))
+  {
     A = iftCuboidWithDilationForConv(
         layer.kernel_size[0], layer.kernel_size[1], layer.kernel_size[2],
         layer.dilation_rate[0], layer.dilation_rate[1], layer.dilation_rate[2]);
-  } else {
+  }
+  else
+  {
     A = iftRectangularWithDilationForConv(
         layer.kernel_size[0], layer.kernel_size[1], layer.dilation_rate[0],
         layer.dilation_rate[1]);
@@ -41,7 +47,8 @@ iftAdjRel *GetPatchAdjacency(iftMImage *mimg, iftFLIMLayer layer) {
   return (A);
 }
 
-int *LoadTruelabels(char *filename) {
+int *LoadTruelabels(char *filename)
+{
   int number_of_kernels;
   FILE *fp;
   int *truelabel;
@@ -49,7 +56,8 @@ int *LoadTruelabels(char *filename) {
   fp = fopen(filename, "r");
   fscanf(fp, "%d", &number_of_kernels);
   truelabel = iftAllocIntArray(number_of_kernels);
-  for (int k = 0; k < number_of_kernels; k++) {
+  for (int k = 0; k < number_of_kernels; k++)
+  {
     fscanf(fp, "%d ", &truelabel[k]);
   }
   fclose(fp);
@@ -57,7 +65,8 @@ int *LoadTruelabels(char *filename) {
   return (truelabel);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   timer *tstart;
 
   /* Example: encode_layer arch.json 1 flim_models */
@@ -83,12 +92,14 @@ int main(int argc, char *argv[]) {
 
   iftFileSet *fs = iftLoadFileSetFromDirBySuffix(input_dir, ".mimg", true);
 
-  for (int i = 0; i < fs->n; i++) {
+  for (int i = 0; i < fs->n; i++)
+  {
     iftMImage *mimg = iftReadMImage(fs->files[i]->path);
     char *basename = iftFilename(fs->files[i]->path, ".mimg");
     sprintf(filename, "%s/%s-conv%d-kernels.npy", model_dir, basename, layer);
 
-    if (iftFileExists(filename)) { /* encode layer using its kernels */
+    if (iftFileExists(filename))
+    { /* encode layer using its kernels */
       iftMatrix *K = iftReadMatrix(filename);
       sprintf(filename, "%s/%s-conv%d", model_dir, basename, layer);
       float *bias = LoadBias(filename);
@@ -102,9 +113,11 @@ int main(int argc, char *argv[]) {
           mimg, A, NULL);                     /*row: pixel, col: adjacencia*/
       iftMatrix *XJ = iftMultMatrices(XI, K); /*row:pixel, col:band*/
       /* Add bias */
-      for (int b = 0; b < nkernels; b++) {
+      for (int b = 0; b < nkernels; b++)
+      {
         float c_bias = bias[b];
-        for (int i = 0; i < XJ->nrows; i++) {
+        for (int i = 0; i < XJ->nrows; i++)
+        {
           iftMatrixElem(XJ, b, i) = iftMatrixElem(XJ, b, i) + c_bias;
         }
       }
@@ -115,17 +128,26 @@ int main(int argc, char *argv[]) {
       iftDestroyAdjRel(&A);
 
       /* Relu */
-      for (int p = 0; p < activ->n; p++) {
-        for (int b = 0; b < activ->m; b++) {
+      for (int p = 0; p < activ->n; p++)
+      {
+        for (int b = 0; b < activ->m; b++)
+        {
+          // ReLU
           activ->val[p][b] = activ->val[p][b] < 0 ? 0 : activ->val[p][b];
+          // Sigmoide
+          // activ->val[p][b] = 1.0 / (1.0 + pow(2.71828, -activ->val[p][b]));
+          // Tanh
+          // activ->val[p][b] = tanh(activ->val[p][b]);
         }
       }
 
       /* Pooling */
 
-      if (strcmp(arch->layer[layer - 1].pool_type, "no_pool") != 0) {
+      if (strcmp(arch->layer[layer - 1].pool_type, "no_pool") != 0)
+      {
         iftMImage *pool = NULL;
-        if (strcmp(arch->layer[layer - 1].pool_type, "avg_pool") == 0) {
+        if (strcmp(arch->layer[layer - 1].pool_type, "avg_pool") == 0)
+        {
           pool = iftFLIMAtrousAveragePooling(
               activ, arch->layer[layer - 1].pool_size[0],
               arch->layer[layer - 1].pool_size[1],
@@ -133,8 +155,11 @@ int main(int argc, char *argv[]) {
               arch->layer[layer - 1].pool_stride);
           iftDestroyMImage(&activ);
           activ = pool;
-        } else {
-          if (strcmp(arch->layer[layer - 1].pool_type, "max_pool") == 0) {
+        }
+        else
+        {
+          if (strcmp(arch->layer[layer - 1].pool_type, "max_pool") == 0)
+          {
             pool = iftFLIMAtrousMaxPooling(
                 activ, arch->layer[layer - 1].pool_size[0],
                 arch->layer[layer - 1].pool_size[1],
@@ -142,7 +167,9 @@ int main(int argc, char *argv[]) {
                 arch->layer[layer - 1].pool_stride);
             iftDestroyMImage(&activ);
             activ = pool;
-          } else {
+          }
+          else
+          {
             iftError("Invalid pooling in layer %d", "main", layer);
           }
         }

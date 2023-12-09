@@ -7,14 +7,18 @@
 
 */
 
-iftAdjRel *GetPatchAdjacency(iftMImage *mimg, iftFLIMLayer layer) {
+iftAdjRel *GetPatchAdjacency(iftMImage *mimg, iftFLIMLayer layer)
+{
   iftAdjRel *A;
 
-  if (iftIs3DMImage(mimg)) {
+  if (iftIs3DMImage(mimg))
+  {
     A = iftCuboidWithDilationForConv(
         layer.kernel_size[0], layer.kernel_size[1], layer.kernel_size[2],
         layer.dilation_rate[0], layer.dilation_rate[1], layer.dilation_rate[2]);
-  } else {
+  }
+  else
+  {
     A = iftRectangularWithDilationForConv(
         layer.kernel_size[0], layer.kernel_size[1], layer.dilation_rate[0],
         layer.dilation_rate[1]);
@@ -23,7 +27,8 @@ iftAdjRel *GetPatchAdjacency(iftMImage *mimg, iftFLIMLayer layer) {
   return (A);
 }
 
-void LoadMergedModel(char *basepath, iftMatrix **K, float **bias) {
+void LoadMergedModel(char *basepath, iftMatrix **K, float **bias)
+{
   char filename[200];
   FILE *fp;
   int nkernels;
@@ -34,13 +39,15 @@ void LoadMergedModel(char *basepath, iftMatrix **K, float **bias) {
   fp = fopen(filename, "r");
   fscanf(fp, "%d", &nkernels);
   *bias = iftAllocFloatArray(nkernels);
-  for (int k = 0; k < nkernels; k++) {
+  for (int k = 0; k < nkernels; k++)
+  {
     fscanf(fp, "%f ", &((*bias)[k]));
   }
   fclose(fp);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   timer *tstart;
 
   /* Example: encode_merged_layer arch.json 1 flim_models */
@@ -74,7 +81,8 @@ int main(int argc, char *argv[]) {
 
   /* Encode layer with merged model */
 
-  for (int i = 0; i < fs->n; i++) {
+  for (int i = 0; i < fs->n; i++)
+  {
     iftMImage *mimg = iftReadMImage(fs->files[i]->path);
     char *basename = iftFilename(fs->files[i]->path, ".mimg");
     iftAdjRel *A = GetPatchAdjacency(mimg, arch->layer[layer - 1]);
@@ -84,13 +92,15 @@ int main(int argc, char *argv[]) {
     int nkernels = Kmerged->ncols;
     /* Convolution */
     iftMatrix *XI =
-        iftMImageToFeatureMatrix(mimg, A, NULL); /*row: pixel, col: adjacencia*/
+        iftMImageToFeatureMatrix(mimg, A, NULL);  /*row: pixel, col: adjacencia*/
     iftMatrix *XJ = iftMultMatrices(XI, Kmerged); /*row:pixel, col:band*/
 
     /* Add bias */
-    for (int i = 0; i < nkernels; i++) {
+    for (int i = 0; i < nkernels; i++)
+    {
       float c_bias = bias_merged[i];
-      for (int b = 0; b < XJ->nrows; b++) {
+      for (int b = 0; b < XJ->nrows; b++)
+      {
         iftMatrixElem(XJ, i, b) = iftMatrixElem(XJ, i, b) + c_bias;
       }
     }
@@ -101,17 +111,26 @@ int main(int argc, char *argv[]) {
     iftDestroyAdjRel(&A);
 
     /* Relu */
-    for (int p = 0; p < activ->n; p++) {
-      for (int b = 0; b < activ->m; b++) {
+    for (int p = 0; p < activ->n; p++)
+    {
+      for (int b = 0; b < activ->m; b++)
+      {
+        // ReLU
         activ->val[p][b] = activ->val[p][b] < 0 ? 0 : activ->val[p][b];
+        // Sigmoide
+        // activ->val[p][b] = 1.0 / (1.0 + pow(2.71828, -activ->val[p][b]));
+        // Tanh
+        // activ->val[p][b] = tanh(activ->val[p][b]);
       }
     }
 
     /* pooling */
 
-    if (strcmp(arch->layer[layer - 1].pool_type, "no_pool") != 0) {
+    if (strcmp(arch->layer[layer - 1].pool_type, "no_pool") != 0)
+    {
       iftMImage *pool = NULL;
-      if (strcmp(arch->layer[layer - 1].pool_type, "avg_pool") == 0) {
+      if (strcmp(arch->layer[layer - 1].pool_type, "avg_pool") == 0)
+      {
         pool = iftFLIMAtrousAveragePooling(
             activ, arch->layer[layer - 1].pool_size[0],
             arch->layer[layer - 1].pool_size[1],
@@ -119,8 +138,11 @@ int main(int argc, char *argv[]) {
             arch->layer[layer - 1].pool_stride);
         iftDestroyMImage(&activ);
         activ = pool;
-      } else {
-        if (strcmp(arch->layer[layer - 1].pool_type, "max_pool") == 0) {
+      }
+      else
+      {
+        if (strcmp(arch->layer[layer - 1].pool_type, "max_pool") == 0)
+        {
           pool = iftFLIMAtrousMaxPooling(activ,
                                          arch->layer[layer - 1].pool_size[0],
                                          arch->layer[layer - 1].pool_size[1],
@@ -128,7 +150,9 @@ int main(int argc, char *argv[]) {
                                          arch->layer[layer - 1].pool_stride);
           iftDestroyMImage(&activ);
           activ = pool;
-        } else {
+        }
+        else
+        {
           iftError("Invalid pooling in layer %d", "main", layer);
         }
       }
