@@ -5,6 +5,9 @@ import os, os.path as osp
 
 MASK_DIR = "./truelabels"
 
+# Increase font size
+plt.rcParams.update({'font.size': 16})
+
 
 def main():
     mask_files = os.listdir(MASK_DIR)
@@ -23,7 +26,7 @@ def main():
     plt.xlabel("Porcentagem de píxeis não nulos")
     plt.ylabel("Número de imagens")
     plt.tight_layout()
-    plt.savefig("histogram.pdf")
+    plt.savefig("misc/histogram.pdf")
 
 
 if __name__ == "__main__":
