@@ -10,7 +10,8 @@
 
 */
 
-float *LoadKernelWeights(char *filename) {
+float *LoadKernelWeights(char *filename)
+{
   int number_of_kernels;
   FILE *fp;
   float *weight;
@@ -18,7 +19,8 @@ float *LoadKernelWeights(char *filename) {
   fp = fopen(filename, "r");
   fscanf(fp, "%d", &number_of_kernels);
   weight = iftAllocFloatArray(number_of_kernels);
-  for (int k = 0; k < number_of_kernels; k++) {
+  for (int k = 0; k < number_of_kernels; k++)
+  {
     fscanf(fp, "%f ", &weight[k]);
   }
   fclose(fp);
@@ -26,18 +28,24 @@ float *LoadKernelWeights(char *filename) {
   return (weight);
 }
 
-iftAdjRel *GetDiskAdjacency(iftImage *img, iftFLIMLayer layer) {
+iftAdjRel *GetDiskAdjacency(iftImage *img, iftFLIMLayer layer)
+{
   iftAdjRel *A;
   float radius = 0.0;
 
-  if (iftIs3DImage(img)) {
-    for (int i = 0; i < 3; i++) {
+  if (iftIs3DImage(img))
+  {
+    for (int i = 0; i < 3; i++)
+    {
       radius += powf(layer.kernel_size[i], 2);
     }
     radius = sqrtf(radius);
     A = iftSpheric(radius);
-  } else {
-    for (int i = 0; i < 2; i++) {
+  }
+  else
+  {
+    for (int i = 0; i < 2; i++)
+    {
       radius += powf(layer.kernel_size[i], 2);
     }
     radius = sqrtf(radius) / 2.0;
@@ -130,17 +138,20 @@ iftAdjRel *GetDiskAdjacency(iftImage *img, iftFLIMLayer layer) {
 
 /*  */
 
-float *AdaptiveWeights(iftMImage *mimg, float perc_thres) {
+float *AdaptiveWeights(iftMImage *mimg, float perc_thres)
+{
   float *weight = iftAllocFloatArray(mimg->m);
   int t, count;
 
-  for (int b = 0; b < mimg->m; b++) {
+  for (int b = 0; b < mimg->m; b++)
+  {
     iftImage *img = iftMImageToImage(mimg, 255, b);
     t = iftOtsu(img);
     count = 0;
 
     /* count activated pixels */
-    for (int p = 0; p < mimg->n; p++) {
+    for (int p = 0; p < mimg->n; p++)
+    {
       if (img->val[p] > t)
         count++;
     }
@@ -153,11 +164,13 @@ float *AdaptiveWeights(iftMImage *mimg, float perc_thres) {
   return (weight);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 
   /* Example: decode_layer 1 arch.json flim_models 0 salie */
 
-  if ((argc != 7) && (argc != 6)) {
+  if ((argc != 7) && (argc != 6))
+  {
     iftError("Usage: decode_layer <P1> <P2> <P3> <P4> <P5>\n"
              "[1] layer\n"
              "[2] architecture of the network\n"
@@ -188,7 +201,8 @@ int main(int argc, char *argv[]) {
 
   int Imax = 255;
 
-  for (int i = 0; i < fs->n; i++) {
+  for (int i = 0; i < fs->n; i++)
+  {
     printf("Processing image %d of %ld\r", i + 1, fs->n);
     char *basename = iftFilename(fs->files[i]->path, ".mimg");
     iftMImage *mimg = iftReadMImage(fs->files[i]->path);
@@ -207,31 +221,47 @@ int main(int argc, char *argv[]) {
     /* Estimate the salience map */
 
     float *weight = NULL;
-    if (model_type == 0) {
+    if (model_type == 0)
+    {
       sprintf(filename, "%s/%s-conv%d-weights.txt", model_dir, basename, layer);
-      if (iftFileExists(filename)) {
+      if (iftFileExists(filename))
+      {
         weight = LoadKernelWeights(filename);
       }
-    } else {
+    }
+    else
+    {
       sprintf(filename, "%s/conv%d-weights.txt", model_dir, layer);
-      if (model_type == 1) {
-        if (iftFileExists(filename)) {
+      if (model_type == 1)
+      {
+        if (iftFileExists(filename))
+        {
           weight = LoadKernelWeights(filename);
         }
-      } else {
+      }
+      else
+      {
         weight = AdaptiveWeights(mimg, 0.1); // it used to be 0.1
       }
     }
 
-    if (weight != NULL) {
+    if (weight != NULL)
+    {
       iftFImage *salie = iftCreateFImage(mimg->xsize, mimg->ysize, mimg->zsize);
       /* decode layer */
-      for (int p = 0; p < mimg->n; p++) {
-        for (int b = 0; b < mimg->m; b++) {
+      for (int p = 0; p < mimg->n; p++)
+      {
+        for (int b = 0; b < mimg->m; b++)
+        {
           salie->val[p] += mimg->val[p][b] * weight[b];
         }
-        if (salie->val[p] < 0)
-          salie->val[p] = 0; /* ReLU (or Sigmoid?) Warning -> always negative */
+
+        // ReLU
+        salie->val[p] = salie->val[p] < 0 ? 0 : salie->val[p];
+        // Sigmoide
+        // salie->val[p] = 1.0 / (1.0 + pow(2.71828, -salie->val[p]));
+        // Tanh
+        // salie->val[p] = tanh(salie->val[p]);
       }
       iftFree(weight);
 
@@ -239,19 +269,26 @@ int main(int argc, char *argv[]) {
       iftImage *salie_map = iftFImageToImage(salie, Imax);
       iftImage *interp_map = NULL;
 
-      if (argc == 7) {
-        if (iftIs3DMImage(mimg)) {
+      if (argc == 7)
+      {
+        if (iftIs3DMImage(mimg))
+        {
           sprintf(filename, "%s/%s.nii.gz", roi_dir, basename);
-        } else {
+        }
+        else
+        {
           sprintf(filename, "%s/%s.png", roi_dir, basename);
         }
         mask = iftReadImageByExt(filename);
       }
 
-      if (iftIs3DMImage(mimg)) {
+      if (iftIs3DMImage(mimg))
+      {
         interp_map = iftInterp(salie_map, scale[0], scale[1], scale[2]);
         sprintf(filename, "%s/%s_layer%d.nii.gz", output_dir, basename, layer);
-      } else {
+      }
+      else
+      {
         interp_map = iftInterp2D(salie_map, scale[0], scale[1]);
         sprintf(filename, "%s/%s_layer%d.png", output_dir, basename, layer);
       }
@@ -260,12 +297,15 @@ int main(int argc, char *argv[]) {
 
       iftAdjRel *A = GetDiskAdjacency(interp_map, arch->layer[0]);
       iftImage *close = iftClose(interp_map, A, NULL);
-      if (mask != NULL) {
+      if (mask != NULL)
+      {
         iftDestroyImage(&interp_map);
         interp_map = iftMask(close, mask);
         iftWriteImageByExt(interp_map, filename);
         iftDestroyImage(&mask);
-      } else {
+      }
+      else
+      {
         iftWriteImageByExt(close, filename);
       }
       iftDestroyImage(&interp_map);
