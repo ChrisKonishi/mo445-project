@@ -2,7 +2,7 @@ import os
 import shutil
 # delete the folders bag, bb, boxes, filtered, flim, iou, label, layer0, layer1, objs, salie
 
-folders_to_delete = ['bag', 'bb', 'boxes', 'filtered', 'flim', 'iou', 'label', 'layer0', 'layer1', 'objs', 'salie']
+folders_to_delete = ['bag', 'bb', 'boxes', 'filtered', 'flim', 'iou', 'label', 'layer0', 'layer1', 'layer2','objs', 'salie']
 
 
 for folder in folders_to_delete:
